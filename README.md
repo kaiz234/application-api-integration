@@ -1,113 +1,44 @@
-# WordPress Application Development & API Integration
+# Application Development & API Integration
 
-## Overview
+A small, runnable WordPress plugin case study demonstrating how structured application data can be rendered through a WordPress shortcode.
 
-This portfolio case study describes a WordPress integration pattern using PHP shortcodes and a REST API to retrieve and display content from an external Laravel-backed service.
+## Demo status
 
-The public case study is intentionally sanitized. It does not include employer credentials, private endpoints, production payloads, internal site identifiers, or confidential source code. This repository is a documented example of the integration approach, not a claim that the original employer integration can be deployed as-is.
+**Verified in WordPress Playground:** the plugin was installed and activated, and the `[qhaiz_api_demo]` shortcode displayed three sample event cards with titles, dates, and descriptions. The user also completed the follow-up checks for responsive layout, card content, and output escaping.
 
-## Problem
+This is a **mock-data demo**, not a live Laravel API integration. No private endpoint, credential, or employer code is included.
 
-A WordPress site may need to display content managed by a separate application. Maintaining duplicate content manually can create extra work and lead to inconsistent information between systems.
+## Repository contents
 
-## Approach
+- `demo-plugin/qhaiz-api-demo.php` — runnable WordPress plugin source.
+- `TEST-PLAN.md` — manual test checklist and execution status.
+- `TEST-RESULTS.md` — record of the checks performed in WordPress Playground.
+- `evidence/playground-demo.png` — screenshot of the rendered shortcode output.
 
-The implementation pattern documented here includes:
+## Run the demo
 
-- **WordPress shortcodes:** `[laravel_tabs]` for displaying API-driven content and `[laravel_post_form]` for a form-related workflow.
-- **API consumption:** PHP requests an external API and processes returned content for WordPress display.
-- **Content handling:** the integration pattern accounts for fields such as title, content, media, permalink, category, and date, depending on the response available.
-- **WordPress post workflow:** a form-related flow can create a WordPress post after validating and sanitizing submitted values.
-- **Security controls:** nonce verification, capability checks where relevant, input validation, and output escaping should be applied to any public-facing submission flow.
-- **Diagnostics:** error logging can support troubleshooting without exposing secrets or sensitive response data.
+1. Download the ZIP archive from the repository (or use the plugin ZIP supplied separately).
+2. In WordPress Admin, go to **Plugins → Add New Plugin → Upload Plugin**.
+3. Upload `qhaiz-api-demo-plugin.zip`, install it, and activate it.
+4. Create a page and add a Shortcode block containing:
 
-This README describes the pattern at a high level. It does not publish the original production API URL or imply that every listed control has been independently audited in the original implementation.
+   `[qhaiz_api_demo]`
 
-## Technology
+5. Publish or preview the page.
 
-- PHP
-- WordPress
-- Shortcodes
-- REST API / HTTP requests
-- Laravel-backed API integration
-- WordPress post and permalink functions
-- Input validation, sanitization, and output escaping
+## Implementation notes
 
-## Architecture
+- Registers the `[qhaiz_api_demo]` shortcode.
+- Uses a dedicated provider function to return synthetic event records.
+- Escapes text and attributes using WordPress escaping functions.
+- Includes an empty-state branch if the provider returns no records.
+- Loads lightweight responsive CSS only on singular pages containing the shortcode.
+- Uses no external libraries, API keys, or remote API calls.
 
-```text
-External Laravel-backed service
-              |
-              | HTTP API response
-              v
-WordPress PHP integration
-              |
-              | Validate and map response fields
-              v
-Shortcode / WordPress display
-              |
-              v
-Rendered content on the WordPress page
-```
+## Next development step
 
-For a form-based workflow, submitted data should be validated and sanitized, the user's permissions should be checked where applicable, and any cross-system request should handle errors and timeouts explicitly.
+Replace the synthetic provider with a real API client in a separate iteration. A production integration should validate the endpoint and response schema, use a bounded request timeout, handle HTTP/JSON errors, and keep credentials out of source control. Any form-submission workflow should be implemented and tested separately with appropriate nonce and capability checks.
 
-## Engineering considerations
+## Test evidence
 
-### API reliability
-- Set a reasonable request timeout.
-- Handle non-success HTTP status codes and malformed JSON.
-- Avoid assuming every response field is present.
-- Do not display raw API errors or sensitive payloads to visitors.
-- Consider caching read-only responses where freshness requirements permit.
-
-### WordPress security
-- Verify nonces for state-changing form submissions.
-- Check user capabilities before privileged actions.
-- Sanitize input and escape output for its final context.
-- Restrict accepted URLs and data formats where applicable.
-- Keep API keys and credentials outside public source code.
-- Avoid logging authentication headers, secrets, or personal data.
-
-### Maintainability
-- Separate API transport, response mapping, and rendering logic.
-- Use clear error handling and reusable helper functions.
-- Document shortcode attributes and expected API fields.
-- Test both successful responses and failure cases.
-
-## Suggested test plan
-
-| Test | Expected behavior |
-|---|---|
-| API returns valid content | The integration maps and displays supported fields |
-| API returns an empty result | A safe empty state is shown |
-| API returns a non-success status | The page fails gracefully and does not expose internal details |
-| API response is malformed | The response is handled without an uncaught error |
-| Required form field is missing | Submission is rejected with a clear validation message |
-| Nonce is invalid or missing | State-changing submission is rejected |
-| User lacks required capability | Privileged action is denied |
-| Content contains HTML-sensitive characters | Output is escaped appropriately |
-| API request times out | The page remains usable and a safe error is recorded |
-
-These are recommended test cases, not results of a test run.
-
-## Privacy and publication notes
-
-This portfolio case study deliberately excludes:
-- Private API URLs, tokens, API keys, and credentials.
-- Production site keys, customer data, and real API responses.
-- Employer-owned source code unless publication is explicitly authorized.
-- Claims about performance, usage, or test coverage without evidence.
-
-## Current status
-
-**Status: Case study and test plan.**
-
-This repository documents the integration approach. A runnable demo implementation and verified test results should be added only after creating a clean-room example with a public or local mock API and actually testing it.
-
-## Future improvements
-
-- Add a small local mock API or fixture-based test server.
-- Add automated PHP syntax checks and unit tests for response mapping.
-- Add a demo plugin using only synthetic data.
-- Add a CI workflow after the demo can run without private services.
+See [`TEST-RESULTS.md`](TEST-RESULTS.md) for the executed checks. Additional edge-case tests for an empty data set and HTML-sensitive input remain marked **NOT RUN**; they are not claimed as passed.
